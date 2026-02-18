@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Organova",
+    "slug": "organova",
+    "version": "1.0.0",
+    "sdkVersion": "52.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0F0F1A"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F0F1A"
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-asset"
+    ]
+  }
+}
