@@ -3,7 +3,7 @@
     "name": "Organova",
     "slug": "organova",
     "version": "1.0.0",
-    "sdkVersion": "51.0.0",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "splash": {
@@ -14,12 +14,14 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "newArchEnabled": false
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0F0F1A"
-      }
+      },
+      "newArchEnabled": false
     },
     "plugins": [
       "expo-secure-store"
