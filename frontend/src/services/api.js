@@ -1,8 +1,10 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// ── OWASP Rule 4: API URL from env, never hardcoded ───────
-const BASE_URL = process.env.API_BASE_URL || 'http://192.168.1.133:5000/api';
+// ── OWASP Rule 4: API URL from EXPO_PUBLIC_ env variable ──
+// Expo only exposes variables prefixed with EXPO_PUBLIC_ at runtime.
+const BASE_URL =
+    process.env.EXPO_PUBLIC_API_BASE_URL || 'http://192.168.1.3:5000/api';
 
 const api = axios.create({
     baseURL: BASE_URL,
