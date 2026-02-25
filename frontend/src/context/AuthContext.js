@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/auth.service';
 
@@ -14,11 +14,15 @@ export function AuthProvider({ children }) {
             try {
                 const token = await SecureStore.getItemAsync('auth_token');
                 if (token) {
+                    // Verify the token is still valid by fetching the current user
                     const { data } = await authService.getMe();
                     setUser(data);
                 }
-            } catch {
-                await SecureStore.deleteItemAsync('auth_token');
+            } catch (err) {
+                // Token expired or invalid – clear it and force re-login
+                console.log('[AuthContext] Session restore failed, clearing token:', err?.message);
+                await SecureStore.deleteItemAsync('auth_token').catch(() => { });
+                setUser(null);
             } finally {
                 setLoading(false);
             }
@@ -42,12 +46,17 @@ export function AuthProvider({ children }) {
 
     // ── Logout ────────────────────────────────────────────────
     async function logout() {
-        await SecureStore.deleteItemAsync('auth_token');
+        await SecureStore.deleteItemAsync('auth_token').catch(() => { });
         setUser(null);
     }
 
+    // ── Update user in context (after profile update) ─────────
+    const updateUser = useCallback((updates) => {
+        setUser((prev) => prev ? { ...prev, ...updates } : prev);
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
             {children}
         </AuthContext.Provider>
     );

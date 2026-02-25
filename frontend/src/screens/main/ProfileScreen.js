@@ -10,7 +10,7 @@ import { validateName, validatePassword } from '../../utils/validators';
 import { COLORS, SPACING, RADIUS } from '../../constants/theme';
 
 export default function ProfileScreen() {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const [name, setName] = useState(user?.name || '');
     const [nameErr, setNameErr] = useState('');
     const [saving, setSaving] = useState(false);
@@ -26,9 +26,11 @@ export default function ProfileScreen() {
         setSaving(true);
         try {
             await userService.updateProfile({ name: name.trim() });
+            // ── Update user in AuthContext so UI reflects new name everywhere ──
+            updateUser({ name: name.trim() });
             Alert.alert('Success', 'Profile updated');
-        } catch {
-            Alert.alert('Error', 'Failed to update profile');
+        } catch (err) {
+            Alert.alert('Error', err.response?.data?.error || 'Failed to update profile');
         } finally {
             setSaving(false);
         }
@@ -45,8 +47,11 @@ export default function ProfileScreen() {
 
         setPwdSaving(true);
         try {
-            await userService.changePassword({ current_password: pwdForm.current, new_password: pwdForm.next });
-            Alert.alert('Success', 'Password changed');
+            await userService.changePassword({
+                current_password: pwdForm.current,
+                new_password: pwdForm.next,
+            });
+            Alert.alert('Success', 'Password changed successfully');
             setPwdForm({ current: '', next: '', confirm: '' });
         } catch (err) {
             Alert.alert('Error', err.response?.data?.error || 'Failed to change password');
@@ -55,17 +60,29 @@ export default function ProfileScreen() {
         }
     }
 
+    const initials = (user?.name || 'U')
+        .split(' ')
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scroll}>
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
                 <Text style={styles.heading}>Profile</Text>
 
                 {/* Avatar */}
-                <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{(user?.name || 'U')[0].toUpperCase()}</Text>
+                <View style={styles.avatarWrapper}>
+                    <View style={styles.avatar}>
+                        <Text style={styles.avatarText}>{initials}</Text>
+                    </View>
+                    <Text style={styles.displayName}>{user?.name}</Text>
+                    <Text style={styles.email}>{user?.email}</Text>
+                    <View style={styles.roleBadge}>
+                        <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
+                    </View>
                 </View>
-                <Text style={styles.email}>{user?.email}</Text>
-                <Text style={styles.role}>{user?.role}</Text>
 
                 {/* Update Name */}
                 <View style={styles.section}>
@@ -77,10 +94,18 @@ export default function ProfileScreen() {
                         placeholder="Full name"
                         placeholderTextColor={COLORS.textMuted}
                         maxLength={100}
+                        autoCapitalize="words"
                     />
                     {nameErr ? <Text style={styles.errorText}>{nameErr}</Text> : null}
-                    <TouchableOpacity style={[styles.btn, saving && styles.btnDisabled]} onPress={handleSaveName} disabled={saving}>
-                        {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Save Name</Text>}
+                    <TouchableOpacity
+                        style={[styles.btn, saving && styles.btnDisabled]}
+                        onPress={handleSaveName}
+                        disabled={saving}
+                    >
+                        {saving
+                            ? <ActivityIndicator color="#fff" />
+                            : <Text style={styles.btnText}>Save Name</Text>
+                        }
                     </TouchableOpacity>
                 </View>
 
@@ -92,7 +117,7 @@ export default function ProfileScreen() {
                         { key: 'next', label: 'New Password' },
                         { key: 'confirm', label: 'Confirm New Password' },
                     ].map(({ key, label }) => (
-                        <View key={key}>
+                        <View key={key} style={styles.fieldGap}>
                             <Text style={styles.label}>{label}</Text>
                             <TextInput
                                 style={[styles.input, pwdErr[key] && styles.inputError]}
@@ -111,13 +136,16 @@ export default function ProfileScreen() {
                         onPress={handleChangePassword}
                         disabled={pwdSaving}
                     >
-                        {pwdSaving ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Change Password</Text>}
+                        {pwdSaving
+                            ? <ActivityIndicator color="#fff" />
+                            : <Text style={styles.btnText}>Change Password</Text>
+                        }
                     </TouchableOpacity>
                 </View>
 
                 {/* Logout */}
                 <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-                    <Text style={styles.logoutText}>Sign Out</Text>
+                    <Text style={styles.logoutText}>🔓  Sign Out</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
@@ -126,20 +154,38 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg },
-    scroll: { padding: SPACING.lg, alignItems: 'center' },
-    heading: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, alignSelf: 'flex-start', marginBottom: SPACING.lg },
+    scroll: { padding: SPACING.lg, paddingBottom: SPACING.xxl },
+    heading: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.lg },
+
+    // Avatar section
+    avatarWrapper: { alignItems: 'center', marginBottom: SPACING.xl },
     avatar: {
-        width: 80, height: 80, borderRadius: 40,
+        width: 84, height: 84, borderRadius: 42,
         backgroundColor: COLORS.primary,
         justifyContent: 'center', alignItems: 'center',
         marginBottom: SPACING.sm,
     },
-    avatarText: { fontSize: 32, fontWeight: '800', color: '#fff' },
-    email: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 4 },
-    role: { fontSize: 12, color: COLORS.primary, fontWeight: '700', textTransform: 'uppercase', marginBottom: SPACING.xl },
+    avatarText: { fontSize: 30, fontWeight: '800', color: '#fff' },
+    displayName: { fontSize: 20, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
+    email: { fontSize: 14, color: COLORS.textSecondary, marginBottom: SPACING.sm },
+    roleBadge: {
+        backgroundColor: COLORS.primary + '33',
+        borderRadius: RADIUS.full,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: 4,
+    },
+    roleText: { fontSize: 11, color: COLORS.primary, fontWeight: '800', letterSpacing: 1 },
+
+    // Sections
     section: { width: '100%', marginBottom: SPACING.xl },
-    sectionTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: SPACING.md },
-    label: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 4, marginTop: SPACING.sm },
+    sectionTitle: {
+        fontSize: 18, fontWeight: '700', color: COLORS.textPrimary,
+        marginBottom: SPACING.md,
+        borderLeftWidth: 3, borderLeftColor: COLORS.primary,
+        paddingLeft: SPACING.sm,
+    },
+    fieldGap: { marginBottom: SPACING.sm },
+    label: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 4 },
     input: {
         backgroundColor: COLORS.bgInput,
         borderRadius: RADIUS.md,
@@ -148,7 +194,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         borderWidth: 1,
         borderColor: COLORS.border,
-        width: '100%',
     },
     inputError: { borderColor: COLORS.error },
     errorText: { color: COLORS.error, fontSize: 12, marginTop: 4 },
@@ -162,12 +207,12 @@ const styles = StyleSheet.create({
     btnDisabled: { opacity: 0.6 },
     btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
     logoutBtn: {
-        width: '100%',
         borderRadius: RADIUS.md,
         padding: SPACING.md,
         alignItems: 'center',
         borderWidth: 1,
         borderColor: COLORS.error,
+        backgroundColor: COLORS.error + '11',
     },
     logoutText: { color: COLORS.error, fontWeight: '700', fontSize: 15 },
 });

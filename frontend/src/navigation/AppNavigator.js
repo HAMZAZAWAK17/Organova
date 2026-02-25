@@ -15,6 +15,7 @@ import RegisterScreen from '../screens/auth/RegisterScreen';
 // Main screens
 import DashboardScreen from '../screens/main/DashboardScreen';
 import CreateTaskScreen from '../screens/main/CreateTaskScreen';
+import EditTaskScreen from '../screens/main/EditTaskScreen';
 import TaskDetailScreen from '../screens/main/TaskDetailScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
@@ -35,7 +36,10 @@ function MainTabs() {
                 tabBarActiveTintColor: COLORS.primary,
                 tabBarInactiveTintColor: COLORS.textMuted,
                 tabBarIcon: ({ color, size }) => {
-                    const icons = { Dashboard: 'home', Profile: 'person' };
+                    const icons = {
+                        Dashboard: 'home-outline',
+                        Profile: 'person-outline',
+                    };
                     return <Ionicons name={icons[route.name] || 'ellipse'} size={size} color={color} />;
                 },
             })}
@@ -73,7 +77,8 @@ export default function AppNavigator() {
                     <>
                         <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
                         <Stack.Screen name="CreateTask" component={CreateTaskScreen} options={{ title: 'New Task' }} />
-                        <Stack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: 'Task' }} />
+                        <Stack.Screen name="EditTask" component={EditTaskScreen} options={{ title: 'Edit Task' }} />
+                        <Stack.Screen name="TaskDetail" component={TaskDetailScreen} options={{ title: 'Task Details' }} />
                     </>
                 ) : (
                     // ── Auth stack ───────────────────────────────────
