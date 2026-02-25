@@ -8,24 +8,28 @@ const createTaskRules = [
         .isLength({ max: 255 }).withMessage('Title max 255 chars'),
 
     body('description')
-        .optional().trim().escape()
+        .optional({ nullable: true }).trim().escape()
         .isLength({ max: 5000 }).withMessage('Description max 5000 chars'),
 
     body('status')
-        .optional()
+        .optional({ nullable: true })
         .isIn(['todo', 'in_progress', 'done', 'archived']).withMessage('Invalid status'),
 
     body('priority')
-        .optional()
+        .optional({ nullable: true })
         .isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority'),
 
     body('due_date')
-        .optional()
+        .optional({ nullable: true })
         .isISO8601().withMessage('due_date must be a valid ISO 8601 date'),
 
     body('category_id')
-        .optional()
+        .optional({ nullable: true })
         .isInt({ min: 1 }).withMessage('category_id must be a positive integer'),
+
+    body('is_pinned')
+        .optional()
+        .isBoolean().withMessage('is_pinned must be a boolean'),
 ];
 
 const updateTaskRules = [

@@ -47,7 +47,13 @@ export default function CreateTaskScreen({ navigation }) {
             });
             Alert.alert('Success', 'Task created!', [{ text: 'OK', onPress: () => navigation.goBack() }]);
         } catch (err) {
-            const msg = err.response?.data?.error || 'Failed to create task';
+            let msg = 'Failed to create task';
+            if (err.response?.data?.error) {
+                msg = err.response.data.error;
+            } else if (err.response?.data?.errors) {
+                // express-validator format
+                msg = err.response.data.errors.map(e => e.msg).join('\n');
+            }
             Alert.alert('Error', msg);
         } finally {
             setLoading(false);

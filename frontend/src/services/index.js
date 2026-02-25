@@ -27,6 +27,13 @@ export const notificationService = {
     markAllRead: () => api.patch('/notifications/read-all'),
 };
 
+export const subtaskService = {
+    list: (taskId) => api.get(`/subtasks/task/${taskId}`),
+    create: (data) => api.post('/subtasks', data),
+    update: (id, data) => api.put(`/subtasks/${id}`, data),
+    remove: (id) => api.delete(`/subtasks/${id}`),
+};
+
 export const userService = {
     getProfile: () => api.get('/users/profile'),
     updateProfile: (data) => api.put('/users/profile', data),

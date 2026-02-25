@@ -5,9 +5,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { taskService } from '../../services';
+import { taskService, subtaskService } from '../../services';
 import { sanitizeText } from '../../utils/validators';
 import { COLORS, SPACING, RADIUS, SHADOW } from '../../constants/theme';
+import { TextInput } from 'react-native';
 
 const PRIORITY_COLOR = {
     low: COLORS.low,
@@ -27,6 +28,8 @@ export default function TaskDetailScreen({ route, navigation }) {
     const { taskId } = route.params;
     const [task, setTask] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
+    const [subtaskLoading, setSubtaskLoading] = useState(false);
 
     // ── Reload task whenever we come back to this screen (e.g. after edit) ──
     useFocusEffect(
@@ -42,6 +45,60 @@ export default function TaskDetailScreen({ route, navigation }) {
                 .finally(() => setLoading(false));
         }, [taskId])
     );
+
+    async function handlePin() {
+        try {
+            await taskService.update(taskId, {
+                title: task.title,
+                is_pinned: !task.is_pinned
+            });
+            setTask({ ...task, is_pinned: !task.is_pinned });
+        } catch (err) {
+            Alert.alert('Error', 'Failed to update pinning status');
+        }
+    }
+
+    async function handleAddSubtask() {
+        if (!newSubtaskTitle.trim()) return;
+        setSubtaskLoading(true);
+        try {
+            const { data } = await subtaskService.create({
+                task_id: taskId,
+                title: newSubtaskTitle.trim()
+            });
+            const newSubtask = { id: data.id, title: newSubtaskTitle.trim(), is_completed: 0 };
+            setTask({ ...task, subtasks: [...(task.subtasks || []), newSubtask] });
+            setNewSubtaskTitle('');
+        } catch (err) {
+            Alert.alert('Error', 'Failed to add subtask');
+        } finally {
+            setSubtaskLoading(false);
+        }
+    }
+
+    async function handleToggleSubtask(subId, currentStatus) {
+        try {
+            await subtaskService.update(subId, { is_completed: !currentStatus });
+            setTask({
+                ...task,
+                subtasks: task.subtasks.map(s => s.id === subId ? { ...s, is_completed: !currentStatus } : s)
+            });
+        } catch (err) {
+            Alert.alert('Error', 'Failed to update subtask');
+        }
+    }
+
+    async function handleDeleteSubtask(subId) {
+        try {
+            await subtaskService.remove(subId);
+            setTask({
+                ...task,
+                subtasks: task.subtasks.filter(s => s.id !== subId)
+            });
+        } catch (err) {
+            Alert.alert('Error', 'Failed to delete subtask');
+        }
+    }
 
     async function handleDelete() {
         Alert.alert('Delete Task', 'Are you sure you want to delete this task?', [
@@ -87,6 +144,9 @@ export default function TaskDetailScreen({ route, navigation }) {
                             {task.status?.replace('_', ' ')}
                         </Text>
                     </View>
+                    <TouchableOpacity style={[styles.pinBtn, task.is_pinned && styles.pinBtnActive]} onPress={handlePin}>
+                        <Text style={styles.pinBtnText}>{task.is_pinned ? '📌 Pinned' : '📍 Pin'}</Text>
+                    </TouchableOpacity>
                 </View>
 
                 <Text style={styles.title}>{sanitizeText(task.title)}</Text>
@@ -119,6 +179,49 @@ export default function TaskDetailScreen({ route, navigation }) {
                             {task.created_at ? new Date(task.created_at).toLocaleDateString() : '—'}
                         </Text>
                     </View>
+                </View>
+
+                {/* Subtasks Section */}
+                <View style={styles.subtasksHeader}>
+                    <Text style={styles.subtasksTitle}>Checklist</Text>
+                    <View style={styles.subtasksInputContainer}>
+                        <TextInput
+                            style={styles.subtasksInput}
+                            placeholder="Add subtask..."
+                            placeholderTextColor={COLORS.textMuted}
+                            value={newSubtaskTitle}
+                            onChangeText={setNewSubtaskTitle}
+                        />
+                        <TouchableOpacity
+                            style={styles.addSubtaskBtn}
+                            onPress={handleAddSubtask}
+                            disabled={subtaskLoading}
+                        >
+                            {subtaskLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.addSubtaskBtnText}>+</Text>}
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <View style={styles.subtasksList}>
+                    {task.subtasks?.map(s => (
+                        <View key={s.id} style={styles.subtaskItem}>
+                            <TouchableOpacity
+                                style={[styles.checkbox, s.is_completed && styles.checkboxChecked]}
+                                onPress={() => handleToggleSubtask(s.id, s.is_completed)}
+                            >
+                                {s.is_completed ? <Text style={styles.checkboxIcon}>✓</Text> : null}
+                            </TouchableOpacity>
+                            <Text style={[styles.subtaskTitle, s.is_completed && styles.subtaskTitleDone]}>
+                                {sanitizeText(s.title)}
+                            </Text>
+                            <TouchableOpacity onPress={() => handleDeleteSubtask(s.id)}>
+                                <Text style={styles.subtaskDelete}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+                    {(!task.subtasks || task.subtasks.length === 0) && (
+                        <Text style={styles.noSubtasks}>No subtasks yet.</Text>
+                    )}
                 </View>
 
                 {/* Actions */}
@@ -187,4 +290,61 @@ const styles = StyleSheet.create({
         borderColor: COLORS.error,
     },
     deleteBtnText: { color: COLORS.error, fontWeight: '700', fontSize: 15 },
+
+    pinBtn: {
+        marginLeft: 'auto',
+        borderRadius: RADIUS.full,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: 4,
+        borderWidth: 1,
+        borderColor: COLORS.border
+    },
+    pinBtnActive: { backgroundColor: COLORS.primary + '22', borderColor: COLORS.primary },
+    pinBtnText: { fontSize: 11, fontWeight: '700', color: COLORS.textPrimary },
+
+    subtasksHeader: { marginTop: SPACING.lg, marginBottom: SPACING.sm },
+    subtasksTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: SPACING.sm },
+    subtasksInputContainer: { flexDirection: 'row', gap: SPACING.xs },
+    subtasksInput: {
+        flex: 1,
+        backgroundColor: COLORS.bgInput,
+        borderRadius: RADIUS.md,
+        padding: 10,
+        color: COLORS.textPrimary,
+        borderWidth: 1,
+        borderColor: COLORS.border
+    },
+    addSubtaskBtn: {
+        backgroundColor: COLORS.primary,
+        borderRadius: RADIUS.md,
+        width: 44,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    addSubtaskBtnText: { color: '#fff', fontSize: 20, fontWeight: '700' },
+
+    subtasksList: { marginBottom: SPACING.xl },
+    subtaskItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: SPACING.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border + '33'
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: COLORS.primary,
+        marginRight: SPACING.md,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    checkboxChecked: { backgroundColor: COLORS.primary },
+    checkboxIcon: { color: '#fff', fontSize: 12, fontWeight: '800' },
+    subtaskTitle: { flex: 1, fontSize: 15, color: COLORS.textPrimary },
+    subtaskTitleDone: { textDecorationLine: 'line-through', color: COLORS.textMuted },
+    subtaskDelete: { padding: 4, color: COLORS.textMuted, fontSize: 16 },
+    noSubtasks: { fontSize: 14, color: COLORS.textMuted, fontStyle: 'italic', marginTop: 4 },
 });
