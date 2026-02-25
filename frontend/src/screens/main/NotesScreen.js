@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { noteService } from '../../services';
@@ -71,9 +72,12 @@ export default function NotesScreen() {
             <Text style={styles.noteTitle}>{sanitizeText(item.title)}</Text>
             <Text style={styles.noteSnippet} numberOfLines={2}>{sanitizeText(item.content || 'No content')}</Text>
             <View style={styles.noteFooter}>
-                <Text style={styles.noteType}>#{item.type}</Text>
+                <View style={styles.noteTypeContainer}>
+                    <Ionicons name="pricetag-outline" size={12} color={COLORS.primary} />
+                    <Text style={styles.noteType}>{item.type}</Text>
+                </View>
                 <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                    <Text style={styles.deleteIcon}>🗑</Text>
+                    <Ionicons name="trash-outline" size={18} color={COLORS.error} />
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
@@ -82,9 +86,10 @@ export default function NotesScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.heading}>My Notes 📝</Text>
+                <Text style={styles.heading}>My Notes</Text>
                 <TouchableOpacity style={styles.addBtn} onPress={() => { setEditingNote(null); setModalVisible(true); }}>
-                    <Text style={styles.addBtnText}>+ New Note</Text>
+                    <Ionicons name="add" size={18} color="#fff" />
+                    <Text style={styles.addBtnText}>New Note</Text>
                 </TouchableOpacity>
             </View>
 
@@ -137,8 +142,16 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg },
     header: { padding: SPACING.lg, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    heading: { fontSize: 26, fontWeight: '800', color: COLORS.textPrimary },
-    addBtn: { backgroundColor: COLORS.primary, paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm, borderRadius: RADIUS.full },
+    heading: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
+    addBtn: {
+        backgroundColor: COLORS.primary,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: SPACING.sm,
+        borderRadius: RADIUS.full,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4
+    },
     addBtnText: { color: '#fff', fontWeight: '700' },
     list: { padding: SPACING.lg },
     noteCard: {
@@ -153,8 +166,8 @@ const styles = StyleSheet.create({
     noteTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
     noteSnippet: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 12 },
     noteFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    noteType: { fontSize: 12, color: COLORS.primary, fontWeight: '600' },
-    deleteIcon: { fontSize: 18 },
+    noteTypeContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    noteType: { fontSize: 12, color: COLORS.primary, fontWeight: '600', textTransform: 'capitalize' },
     emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: 100 },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },

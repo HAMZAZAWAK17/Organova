@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import { validateEmail, validatePassword, validateName } from '../../utils/validators';
 import { COLORS, SPACING, RADIUS, FONTS } from '../../constants/theme';
+import Logo from '../../components/common/Logo';
 
 export default function RegisterScreen({ navigation }) {
     const { register } = useAuth();
@@ -44,6 +45,9 @@ export default function RegisterScreen({ navigation }) {
         <LinearGradient colors={[COLORS.bg, COLORS.bgCard]} style={styles.container}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
                 <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+                    <View style={styles.logoWrapper}>
+                        <Logo size={24} />
+                    </View>
                     <Text style={styles.title}>Create Account</Text>
                     <Text style={styles.subtitle}>Join Organova today</Text>
 
@@ -118,7 +122,8 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     inner: { flex: 1 },
     scroll: { padding: SPACING.lg, paddingTop: SPACING.xxl },
-    title: { fontSize: 32, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.xs },
+    logoWrapper: { marginBottom: SPACING.md },
+    title: { fontSize: 32, fontWeight: '800', color: COLORS.primary, marginBottom: SPACING.xs },
     subtitle: { fontSize: 16, color: COLORS.textSecondary, marginBottom: SPACING.xl },
     field: { marginBottom: SPACING.md },
     label: { fontSize: 14, color: COLORS.textSecondary, marginBottom: SPACING.xs, fontWeight: '600' },

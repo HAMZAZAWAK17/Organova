@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-    View, Text, ScrollView, StyleSheet,
-    ActivityIndicator, TouchableOpacity, Alert,
-} from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { taskService, subtaskService } from '../../services';
 import { sanitizeText } from '../../utils/validators';
 import { COLORS, SPACING, RADIUS, SHADOW } from '../../constants/theme';
-import { TextInput } from 'react-native';
 
 const PRIORITY_COLOR = {
     low: COLORS.low,
@@ -145,7 +142,8 @@ export default function TaskDetailScreen({ route, navigation }) {
                         </Text>
                     </View>
                     <TouchableOpacity style={[styles.pinBtn, task.is_pinned && styles.pinBtnActive]} onPress={handlePin}>
-                        <Text style={styles.pinBtnText}>{task.is_pinned ? '📌 Pinned' : '📍 Pin'}</Text>
+                        <Ionicons name={task.is_pinned ? "pin" : "pin-outline"} size={14} color={task.is_pinned ? COLORS.primary : COLORS.textPrimary} />
+                        <Text style={[styles.pinBtnText, task.is_pinned && { color: COLORS.primary }]}>{task.is_pinned ? 'Pinned' : 'Pin'}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -161,20 +159,29 @@ export default function TaskDetailScreen({ route, navigation }) {
                 <View style={styles.metaRow}>
                     {task.due_date && (
                         <View style={styles.metaItem}>
-                            <Text style={styles.metaLabel}>📅 Due Date</Text>
+                            <View style={styles.metaLabelRow}>
+                                <Ionicons name="calendar-outline" size={12} color={COLORS.textMuted} />
+                                <Text style={styles.metaLabel}>Due Date</Text>
+                            </View>
                             <Text style={styles.metaValue}>{task.due_date.slice(0, 10)}</Text>
                         </View>
                     )}
                     {task.category_name && (
                         <View style={[styles.metaItem, { borderLeftColor: task.category_color || COLORS.primary }]}>
-                            <Text style={styles.metaLabel}>🏷 Category</Text>
+                            <View style={styles.metaLabelRow}>
+                                <Ionicons name="tag-outline" size={12} color={COLORS.textMuted} />
+                                <Text style={styles.metaLabel}>Category</Text>
+                            </View>
                             <Text style={[styles.metaValue, { color: task.category_color || COLORS.primary }]}>
                                 {task.category_name}
                             </Text>
                         </View>
                     )}
                     <View style={styles.metaItem}>
-                        <Text style={styles.metaLabel}>📆 Created</Text>
+                        <View style={styles.metaLabelRow}>
+                            <Ionicons name="time-outline" size={12} color={COLORS.textMuted} />
+                            <Text style={styles.metaLabel}>Created</Text>
+                        </View>
                         <Text style={styles.metaValue}>
                             {task.created_at ? new Date(task.created_at).toLocaleDateString() : '—'}
                         </Text>
@@ -197,7 +204,7 @@ export default function TaskDetailScreen({ route, navigation }) {
                             onPress={handleAddSubtask}
                             disabled={subtaskLoading}
                         >
-                            {subtaskLoading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.addSubtaskBtnText}>+</Text>}
+                            {subtaskLoading ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="add" size={24} color="#fff" />}
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -209,13 +216,13 @@ export default function TaskDetailScreen({ route, navigation }) {
                                 style={[styles.checkbox, s.is_completed && styles.checkboxChecked]}
                                 onPress={() => handleToggleSubtask(s.id, s.is_completed)}
                             >
-                                {s.is_completed ? <Text style={styles.checkboxIcon}>✓</Text> : null}
+                                {s.is_completed ? <Ionicons name="checkmark" size={14} color="#fff" /> : null}
                             </TouchableOpacity>
                             <Text style={[styles.subtaskTitle, s.is_completed && styles.subtaskTitleDone]}>
                                 {sanitizeText(s.title)}
                             </Text>
                             <TouchableOpacity onPress={() => handleDeleteSubtask(s.id)}>
-                                <Text style={styles.subtaskDelete}>✕</Text>
+                                <Ionicons name="close-circle-outline" size={20} color={COLORS.textMuted} />
                             </TouchableOpacity>
                         </View>
                     ))}
@@ -229,11 +236,13 @@ export default function TaskDetailScreen({ route, navigation }) {
                     style={styles.editBtn}
                     onPress={() => navigation.navigate('EditTask', { taskId })}
                 >
-                    <Text style={styles.editBtnText}>✏️  Edit Task</Text>
+                    <Ionicons name="create-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.editBtnText}>Edit Task</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-                    <Text style={styles.deleteBtnText}>🗑  Delete Task</Text>
+                    <Ionicons name="trash-outline" size={20} color={COLORS.error} style={{ marginRight: 8 }} />
+                    <Text style={styles.deleteBtnText}>Delete Task</Text>
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
@@ -256,7 +265,7 @@ const styles = StyleSheet.create({
     statusBadge: { borderRadius: RADIUS.full, paddingHorizontal: SPACING.md, paddingVertical: 4 },
     statusText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
 
-    title: { fontSize: 26, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.md, lineHeight: 34 },
+    title: { fontSize: 26, fontWeight: '800', color: COLORS.primary, marginBottom: SPACING.md, lineHeight: 34 },
     description: { fontSize: 15, color: COLORS.textSecondary, lineHeight: 24, marginBottom: SPACING.lg },
     noDesc: { fontSize: 14, color: COLORS.textMuted, fontStyle: 'italic', marginBottom: SPACING.lg },
 
@@ -278,6 +287,8 @@ const styles = StyleSheet.create({
         borderRadius: RADIUS.md,
         padding: SPACING.md,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
         marginBottom: SPACING.md,
     },
     editBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
@@ -286,6 +297,8 @@ const styles = StyleSheet.create({
         borderRadius: RADIUS.md,
         padding: SPACING.md,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
         borderWidth: 1,
         borderColor: COLORS.error,
     },

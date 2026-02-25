@@ -47,3 +47,9 @@ export const userService = {
     updateProfile: (data) => api.put('/users/profile', data),
     changePassword: (data) => api.put('/users/change-password', data),
 };
+
+export const eventService = {
+    list: () => api.get('/events'),
+    create: (data) => api.post('/events', data),
+    remove: (id) => api.delete(`/events/${id}`),
+};

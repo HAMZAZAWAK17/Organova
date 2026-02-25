@@ -20,6 +20,7 @@ import TaskDetailScreen from '../screens/main/TaskDetailScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import StatsScreen from '../screens/main/StatsScreen';
 import NotesScreen from '../screens/main/NotesScreen';
+import CalendarScreen from '../screens/main/CalendarScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,6 +42,7 @@ function MainTabs() {
                     const icons = {
                         Dashboard: 'list-outline',
                         Notes: 'document-text-outline',
+                        Calendar: 'calendar-outline',
                         Stats: 'bar-chart-outline',
                         Profile: 'person-outline',
                     };
@@ -50,6 +52,7 @@ function MainTabs() {
         >
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
             <Tab.Screen name="Notes" component={NotesScreen} />
+            <Tab.Screen name="Calendar" component={CalendarScreen} />
             <Tab.Screen name="Stats" component={StatsScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>

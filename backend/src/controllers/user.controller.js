@@ -7,7 +7,7 @@ const { pool } = require('../config/db');
 async function getProfile(req, res, next) {
     try {
         const [rows] = await pool.execute(
-            'SELECT id, name, email, role, created_at FROM users WHERE id = ?',
+            'SELECT id, name, email, avatar_url, role, created_at FROM users WHERE id = ?',
             [req.user.id]
         );
         if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -18,10 +18,10 @@ async function getProfile(req, res, next) {
 // ── UPDATE PROFILE ─────────────────────────────────────────
 async function updateProfile(req, res, next) {
     try {
-        const { name } = req.body;
+        const { name, avatar_url } = req.body;
         await pool.execute(
-            'UPDATE users SET name = ? WHERE id = ?',
-            [name, req.user.id]
+            'UPDATE users SET name = ?, avatar_url = ? WHERE id = ?',
+            [name, avatar_url || null, req.user.id]
         );
         res.json({ message: 'Profile updated' });
     } catch (err) { next(err); }

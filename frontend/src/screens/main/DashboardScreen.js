@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { taskService } from '../../services';
@@ -75,7 +76,7 @@ export default function DashboardScreen({ navigation }) {
             <View style={styles.cardHeader}>
                 <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLOR[item.priority] || COLORS.textMuted }]} />
                 <Text style={styles.cardTitle} numberOfLines={1}>{sanitizeText(item.title)}</Text>
-                {item.is_pinned ? <Text style={styles.pinIcon}>📌</Text> : null}
+                {item.is_pinned ? <Ionicons name="pin" size={16} color={COLORS.primary} style={styles.pinIcon} /> : null}
             </View>
             {item.description ? (
                 <Text style={styles.cardDesc} numberOfLines={2}>{sanitizeText(item.description)}</Text>
@@ -87,7 +88,10 @@ export default function DashboardScreen({ navigation }) {
                     </Text>
                 </View>
                 {item.due_date && (
-                    <Text style={styles.dueDate}>📅 {item.due_date.slice(0, 10)}</Text>
+                    <View style={styles.dueContainer}>
+                        <Ionicons name="calendar-outline" size={12} color={COLORS.textMuted} />
+                        <Text style={styles.dueDate}>{item.due_date.slice(0, 10)}</Text>
+                    </View>
                 )}
                 {item.category_name && (
                     <View style={[styles.categoryBadge, { borderColor: item.category_color || COLORS.primary }]}>
@@ -151,7 +155,7 @@ export default function DashboardScreen({ navigation }) {
                 ListEmptyComponent={
                     !error ? (
                         <View style={styles.empty}>
-                            <Text style={styles.emptyIcon}>📋</Text>
+                            <Ionicons name="clipboard-outline" size={64} color={COLORS.textMuted} />
                             <Text style={styles.emptyText}>No tasks yet!</Text>
                             <Text style={styles.emptySubText}>Tap "+ New" to create your first task.</Text>
                         </View>
@@ -173,7 +177,7 @@ const styles = StyleSheet.create({
         paddingBottom: SPACING.md,
     },
     greeting: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 2 },
-    heading: { fontSize: 26, fontWeight: '800', color: COLORS.textPrimary },
+    heading: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
     addBtn: {
         backgroundColor: COLORS.primary,
         borderRadius: RADIUS.full,
@@ -196,7 +200,8 @@ const styles = StyleSheet.create({
     priorityDot: { width: 10, height: 10, borderRadius: 5, marginRight: SPACING.sm },
     cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.textPrimary, flex: 1 },
     pinnedCard: { borderColor: COLORS.primary, borderWidth: 1.5 },
-    pinIcon: { fontSize: 14, marginLeft: SPACING.xs },
+    pinIcon: { marginLeft: SPACING.xs },
+    dueContainer: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     searchContainer: { paddingHorizontal: SPACING.lg, marginBottom: SPACING.md },
     searchInput: {
         backgroundColor: COLORS.bgInput,

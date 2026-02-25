@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import {
-    View, Text, TextInput, TouchableOpacity,
-    StyleSheet, ScrollView, ActivityIndicator, Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services';
@@ -14,10 +13,45 @@ export default function ProfileScreen() {
     const [name, setName] = useState(user?.name || '');
     const [nameErr, setNameErr] = useState('');
     const [saving, setSaving] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || '');
 
     const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
     const [pwdErr, setPwdErr] = useState({});
     const [pwdSaving, setPwdSaving] = useState(false);
+
+    async function pickImage() {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to make this work!');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if (!result.canceled) {
+            handleUpdateAvatar(result.assets[0].uri);
+        }
+    }
+
+    async function handleUpdateAvatar(uri) {
+        setSaving(true);
+        try {
+            // NOTE: In a real app, you'd upload URI to S3/Cloudinary and get a URL back.
+            // For this demo, we'll just save the local URI (though it won't persist across devices).
+            await userService.updateProfile({ name: name.trim(), avatar_url: uri });
+            updateUser({ avatar_url: uri });
+            setAvatarUrl(uri);
+        } catch (err) {
+            Alert.alert('Error', 'Failed to update avatar');
+        } finally {
+            setSaving(false);
+        }
+    }
 
     async function handleSaveName() {
         const err = validateName(name);
@@ -25,9 +59,9 @@ export default function ProfileScreen() {
         setNameErr('');
         setSaving(true);
         try {
-            await userService.updateProfile({ name: name.trim() });
+            await userService.updateProfile({ name: name.trim(), avatar_url: avatarUrl });
             // ── Update user in AuthContext so UI reflects new name everywhere ──
-            updateUser({ name: name.trim() });
+            updateUser({ name: name.trim(), avatar_url: avatarUrl });
             Alert.alert('Success', 'Profile updated');
         } catch (err) {
             Alert.alert('Error', err.response?.data?.error || 'Failed to update profile');
@@ -74,9 +108,18 @@ export default function ProfileScreen() {
 
                 {/* Avatar */}
                 <View style={styles.avatarWrapper}>
-                    <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>{initials}</Text>
-                    </View>
+                    <TouchableOpacity style={styles.avatarContainer} onPress={pickImage}>
+                        {avatarUrl ? (
+                            <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+                        ) : (
+                            <View style={styles.avatarPlaceholder}>
+                                <Text style={styles.avatarText}>{initials}</Text>
+                            </View>
+                        )}
+                        <View style={styles.editBadge}>
+                            <Ionicons name="camera" size={16} color="#fff" />
+                        </View>
+                    </TouchableOpacity>
                     <Text style={styles.displayName}>{user?.name}</Text>
                     <Text style={styles.email}>{user?.email}</Text>
                     <View style={styles.roleBadge}>
@@ -159,17 +202,29 @@ const styles = StyleSheet.create({
 
     // Avatar section
     avatarWrapper: { alignItems: 'center', marginBottom: SPACING.xl },
-    avatar: {
-        width: 84, height: 84, borderRadius: 42,
+    avatarContainer: { position: 'relative', marginBottom: SPACING.sm },
+    avatarPlaceholder: {
+        width: 100, height: 100, borderRadius: 50,
         backgroundColor: COLORS.primary,
         justifyContent: 'center', alignItems: 'center',
-        marginBottom: SPACING.sm,
+        borderWidth: 3, borderColor: COLORS.bgCard
     },
-    avatarText: { fontSize: 30, fontWeight: '800', color: '#fff' },
-    displayName: { fontSize: 20, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
+    avatarImage: {
+        width: 100, height: 100, borderRadius: 50,
+        borderWidth: 3, borderColor: COLORS.bgCard
+    },
+    editBadge: {
+        position: 'absolute', bottom: 0, right: 0,
+        backgroundColor: COLORS.primary,
+        width: 32, height: 32, borderRadius: 16,
+        justifyContent: 'center', alignItems: 'center',
+        borderWidth: 2, borderColor: COLORS.bgCard
+    },
+    avatarText: { fontSize: 36, fontWeight: '800', color: '#fff' },
+    displayName: { fontSize: 24, fontWeight: '800', color: COLORS.primary, marginBottom: 4 },
     email: { fontSize: 14, color: COLORS.textSecondary, marginBottom: SPACING.sm },
     roleBadge: {
-        backgroundColor: COLORS.primary + '33',
+        backgroundColor: COLORS.primary + '22',
         borderRadius: RADIUS.full,
         paddingHorizontal: SPACING.md,
         paddingVertical: 4,

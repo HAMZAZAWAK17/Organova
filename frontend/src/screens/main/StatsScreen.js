@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { taskService } from '../../services';
@@ -28,12 +29,29 @@ export default function StatsScreen() {
         }, [])
     );
 
-    const StatCard = ({ label, value, color }) => (
-        <View style={[styles.statCard, { borderLeftColor: color || COLORS.primary }]}>
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={[styles.statValue, { color: color || COLORS.textPrimary }]}>{value}</Text>
-        </View>
-    );
+    const StatCard = ({ label, value, color }) => {
+        const getIcon = (lbl) => {
+            const l = lbl.toLowerCase();
+            if (l.includes('todo')) return 'list-circle-outline';
+            if (l.includes('progress')) return 'sync-outline';
+            if (l.includes('done')) return 'checkmark-done-circle-outline';
+            if (l.includes('low')) return 'flag-outline';
+            if (l.includes('medium')) return 'flag';
+            if (l.includes('high')) return 'alert-circle-outline';
+            if (l.includes('urgent')) return 'warning-outline';
+            return 'stats-chart-outline';
+        };
+
+        return (
+            <View style={[styles.statCard, { borderLeftColor: color || COLORS.primary }]}>
+                <View style={styles.statCardHeader}>
+                    <Text style={styles.statLabel}>{label}</Text>
+                    <Ionicons name={getIcon(label)} size={14} color={color || COLORS.textMuted} />
+                </View>
+                <Text style={[styles.statValue, { color: color || COLORS.textPrimary }]}>{value}</Text>
+            </View>
+        );
+    };
 
     if (loading && !refreshing) {
         return (
@@ -49,7 +67,10 @@ export default function StatsScreen() {
                 contentContainerStyle={styles.scroll}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchStats(); }} />}
             >
-                <Text style={styles.heading}>Statistics 📊</Text>
+                <View style={styles.header}>
+                    <Text style={styles.heading}>Statistics</Text>
+                    <Ionicons name="stats-chart" size={28} color={COLORS.primary} />
+                </View>
 
                 <View style={styles.overview}>
                     <View style={styles.progressCircle}>
@@ -58,7 +79,10 @@ export default function StatsScreen() {
                     </View>
                     <View style={styles.overviewStats}>
                         <Text style={styles.totalTasks}>{stats?.totalTasks || 0}</Text>
-                        <Text style={styles.totalLabel}>Total Tasks</Text>
+                        <View style={styles.totalLabelRow}>
+                            <Ionicons name="list" size={14} color={COLORS.textSecondary} />
+                            <Text style={styles.totalLabel}>Total Tasks</Text>
+                        </View>
                     </View>
                 </View>
 
@@ -84,7 +108,8 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     scroll: { padding: SPACING.lg },
-    heading: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.xl },
+    heading: { fontSize: 28, fontWeight: '800', color: COLORS.primary },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.xl },
     overview: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -92,6 +117,8 @@ const styles = StyleSheet.create({
         padding: SPACING.xl,
         borderRadius: RADIUS.lg,
         marginBottom: SPACING.xl,
+        borderWidth: 1,
+        borderColor: COLORS.border,
         ...SHADOW.card
     },
     progressCircle: {
@@ -107,6 +134,7 @@ const styles = StyleSheet.create({
     progressSubtext: { fontSize: 10, color: COLORS.textMuted, textTransform: 'uppercase' },
     overviewStats: { marginLeft: SPACING.xl },
     totalTasks: { fontSize: 32, fontWeight: '800', color: COLORS.primary },
+    totalLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     totalLabel: { fontSize: 14, color: COLORS.textSecondary },
     sectionTitle: { fontSize: 18, fontWeight: '700', color: COLORS.textPrimary, marginBottom: SPACING.md, marginTop: SPACING.lg },
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md },
@@ -116,8 +144,11 @@ const styles = StyleSheet.create({
         borderRadius: RADIUS.md,
         width: '47%',
         borderLeftWidth: 4,
+        borderWidth: 1,
+        borderColor: COLORS.border,
         ...SHADOW.card
     },
-    statLabel: { fontSize: 12, color: COLORS.textMuted, textTransform: 'capitalize', marginBottom: 4 },
+    statCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+    statLabel: { fontSize: 12, color: COLORS.textMuted, textTransform: 'capitalize' },
     statValue: { fontSize: 20, fontWeight: '700' },
 });

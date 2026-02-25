@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 import { validateEmail } from '../../utils/validators';
 import { COLORS, SPACING, RADIUS } from '../../constants/theme';
+import Logo from '../../components/common/Logo';
 
 export default function LoginScreen({ navigation }) {
     const { login } = useAuth();
@@ -40,7 +41,9 @@ export default function LoginScreen({ navigation }) {
         <LinearGradient colors={[COLORS.bg, COLORS.bgCard]} style={styles.container}>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.inner}>
                 <View style={styles.content}>
-                    <Text style={styles.logo}>⬡ Organova</Text>
+                    <View style={styles.logoWrapper}>
+                        <Logo size={32} />
+                    </View>
                     <Text style={styles.title}>Welcome back</Text>
                     <Text style={styles.subtitle}>Sign in to continue</Text>
 
@@ -98,8 +101,8 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     inner: { flex: 1, justifyContent: 'center' },
     content: { padding: SPACING.lg },
-    logo: { fontSize: 28, fontWeight: '900', color: COLORS.primary, marginBottom: SPACING.xl },
-    title: { fontSize: 32, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.xs },
+    logoWrapper: { marginBottom: SPACING.xl },
+    title: { fontSize: 32, fontWeight: '800', color: COLORS.primary, marginBottom: SPACING.xs },
     subtitle: { fontSize: 16, color: COLORS.textSecondary, marginBottom: SPACING.xl },
     field: { marginBottom: SPACING.md },
     label: { fontSize: 14, color: COLORS.textSecondary, marginBottom: SPACING.xs, fontWeight: '600' },

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View, Text, TextInput, TouchableOpacity,
-    StyleSheet, ScrollView, ActivityIndicator, Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { taskService, categoryService } from '../../services';
 import { validateTaskTitle } from '../../utils/validators';
@@ -72,7 +70,10 @@ export default function CreateTaskScreen({ navigation }) {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scroll}>
-                <Text style={styles.heading}>New Task</Text>
+                <View style={styles.header}>
+                    <Text style={styles.heading}>New Task</Text>
+                    <Ionicons name="add-circle-outline" size={32} color={COLORS.primary} />
+                </View>
 
                 {/* Title */}
                 <Text style={styles.label}>Title *</Text>
@@ -150,7 +151,14 @@ export default function CreateTaskScreen({ navigation }) {
                     onPress={handleCreate}
                     disabled={loading}
                 >
-                    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Create Task</Text>}
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <View style={styles.btnRow}>
+                            <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                            <Text style={styles.btnText}>Create Task</Text>
+                        </View>
+                    )}
                 </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
@@ -160,7 +168,8 @@ export default function CreateTaskScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: COLORS.bg },
     scroll: { padding: SPACING.lg },
-    heading: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, marginBottom: SPACING.lg },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
+    heading: { fontSize: 28, fontWeight: '800', color: COLORS.primary },
     label: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '600', marginBottom: SPACING.xs, marginTop: SPACING.md },
     input: {
         backgroundColor: COLORS.bgInput,
@@ -193,5 +202,6 @@ const styles = StyleSheet.create({
         marginTop: SPACING.xl,
     },
     btnDisabled: { opacity: 0.6 },
+    btnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
