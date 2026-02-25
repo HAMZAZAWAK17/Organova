@@ -18,6 +18,8 @@ import CreateTaskScreen from '../screens/main/CreateTaskScreen';
 import EditTaskScreen from '../screens/main/EditTaskScreen';
 import TaskDetailScreen from '../screens/main/TaskDetailScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
+import StatsScreen from '../screens/main/StatsScreen';
+import NotesScreen from '../screens/main/NotesScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,7 +39,9 @@ function MainTabs() {
                 tabBarInactiveTintColor: COLORS.textMuted,
                 tabBarIcon: ({ color, size }) => {
                     const icons = {
-                        Dashboard: 'home-outline',
+                        Dashboard: 'list-outline',
+                        Notes: 'document-text-outline',
+                        Stats: 'bar-chart-outline',
                         Profile: 'person-outline',
                     };
                     return <Ionicons name={icons[route.name] || 'ellipse'} size={size} color={color} />;
@@ -45,6 +49,8 @@ function MainTabs() {
             })}
         >
             <Tab.Screen name="Dashboard" component={DashboardScreen} />
+            <Tab.Screen name="Notes" component={NotesScreen} />
+            <Tab.Screen name="Stats" component={StatsScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
     );

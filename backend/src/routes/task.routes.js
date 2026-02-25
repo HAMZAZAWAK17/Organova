@@ -4,7 +4,7 @@ const { authenticate } = require('../middlewares/auth.middleware');
 const { validate } = require('../middlewares/validate.middleware');
 const { body, param } = require('express-validator');
 const {
-    listTasks, getTask, createTask, updateTask, deleteTask,
+    listTasks, getTask, createTask, updateTask, deleteTask, getStats
 } = require('../controllers/task.controller');
 const {
     createTaskRules, updateTaskRules, taskIdRule, listTasksRules,
