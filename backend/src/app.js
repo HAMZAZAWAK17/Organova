@@ -14,6 +14,7 @@ const categoryRoutes = require('./routes/category.routes');
 const commentRoutes = require('./routes/comment.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const subtaskRoutes = require('./routes/subtask.routes');
+const noteRoutes = require('./routes/note.routes');
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subtasks', subtaskRoutes);
+app.use('/api/notes', noteRoutes);
 
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

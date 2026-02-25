@@ -14,6 +14,7 @@ const {
 router.use(authenticate);
 
 router.get('/', listTasksRules, validate, listTasks);
+router.get('/stats', getStats);
 router.get('/:id', taskIdRule, validate, getTask);
 router.post('/', createTaskRules, validate, createTask);
 router.put('/:id', updateTaskRules, validate, updateTask);

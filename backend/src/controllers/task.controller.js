@@ -137,4 +137,35 @@ async function deleteTask(req, res, next) {
     }
 }
 
-module.exports = { listTasks, getTask, createTask, updateTask, deleteTask };
+async function getStats(req, res, next) {
+    try {
+        const userId = req.user.id;
+
+        // Count by status
+        const [statusCounts] = await pool.execute(
+            'SELECT status, COUNT(*) as count FROM tasks WHERE user_id = ? GROUP BY status',
+            [userId]
+        );
+
+        // Count by priority
+        const [priorityCounts] = await pool.execute(
+            'SELECT priority, COUNT(*) as count FROM tasks WHERE user_id = ? GROUP BY priority',
+            [userId]
+        );
+
+        // Completion rate (done vs total)
+        const [[{ total }]] = await pool.execute('SELECT COUNT(*) as total FROM tasks WHERE user_id = ?', [userId]);
+        const [[{ done }]] = await pool.execute('SELECT COUNT(*) as done FROM tasks WHERE user_id = ? AND status = "done"', [userId]);
+
+        res.json({
+            statusCounts,
+            priorityCounts,
+            completionRate: total > 0 ? (done / total) * 100 : 0,
+            totalTasks: total
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { listTasks, getTask, createTask, updateTask, deleteTask, getStats };

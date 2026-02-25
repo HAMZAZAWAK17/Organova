@@ -6,6 +6,14 @@ export const taskService = {
     create: (data) => api.post('/tasks', data),
     update: (id, data) => api.put(`/tasks/${id}`, data),
     remove: (id) => api.delete(`/tasks/${id}`),
+    getStats: () => api.get('/tasks/stats'),
+};
+
+export const noteService = {
+    list: () => api.get('/notes'),
+    create: (data) => api.post('/notes', data),
+    update: (id, data) => api.put(`/notes/${id}`, data),
+    remove: (id) => api.delete(`/notes/${id}`),
 };
 
 export const categoryService = {
